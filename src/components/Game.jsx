@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import style from './Game.module.css';
 import PromoteModal from './PromoteModal/PromoteModal';
 import { defaultPlacement } from '../assets/constants';
 import { calculateAllMoves, calculateCheckmate } from './utils';
 import Board from './board/Board';
 import BoardInfo from './BoardInfo/BoardInfo';
+import PeerConnection from './PeerConnection/PeerConnection';
 
 
 function Game({time}) {
@@ -16,6 +17,9 @@ function Game({time}) {
   const [currentPlayer, setCurrentPlayer] = useState('P1'); 
   const [moveHistory, setMoveHistory] = useState([]);
 
+  const [connection, setConnection] = useState(null)
+
+  //time
   const [p1Time, setP1Time] = useState(time); 
   const [p2Time, setP2Time] = useState(time);
 
@@ -91,7 +95,10 @@ function Game({time}) {
       setPromotionInfo({ from, to, piece });
     } else {
       setPiecesPlacement(p => ({ ...p, [from]: null, [to]: piece }));
+      connection.send({from, to, piece})
+
     }
+
   
     setMoveHistory(prevHistory => [
       ...prevHistory,
@@ -146,9 +153,21 @@ function Game({time}) {
   }, [piecesPlacement]);
 
 
+    //webrtc
+    const handleConnection = useCallback((conn) => {
+      setConnection(conn)
+      conn.on('data', (data) => {
+        console.log("Data recived")
+        console.log({data})
+        console.log("Data recived")
+      });
+    }, [])
+
+
   return (
     <div className={style.container}>
-
+      <PeerConnection  onConnection={handleConnection} />
+      
 
       <Board
         currentPlayer={currentPlayer == "P1" ? "l" : "d"}
@@ -158,7 +177,7 @@ function Game({time}) {
         isIllegalMoveError={isIllegalMoveError}
         handlePieceMove={handlePieceMove}
       />
-      <BoardInfo history={moveHistory} p1Time={p1Time} p2Time={p2Time} currentPlayer={currentPlayer} TIME={time} />
+      <BoardInfo handlePieceMove={handlePieceMove} history={moveHistory} p1Time={p1Time} p2Time={p2Time} currentPlayer={currentPlayer} TIME={time} />
 
       {promotionInfo && (
         <PromoteModal

@@ -80,7 +80,6 @@ function Board({currentPlayer, piecesPlacement, allPiecesMoves, checkInfo, isIll
 
                     const isDisabled = pieceInfo?.color && pieceInfo.color !== currentPlayer;
 
-
                     return (
                         <div key={colIndex} className={`${style.col} ${backgroundColor} ${isMoveClassName} `} onMouseDown={() =>  onCellClick(cellName, isDisabled)} onDragOver={e => e.preventDefault()}  onDrop={e => onDrop(e, cellName)}
                             style={activePiece === cellName ? {backgroundColor: "#829769"} : {}}
